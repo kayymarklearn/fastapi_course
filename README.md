@@ -6,7 +6,7 @@ A social media API — users, posts, upvotes. Built as part of a FastAPI course.
 
 You can register an account, log in, create posts, list/search through them, and upvote posts. Posts are owned by whoever created them — you can only edit or delete your own. Authentication is handled with JWT tokens, passwords are hashed with argon2, and it all sits on top of PostgreSQL with SQLAlchemy handling the queries.
 
-There's no frontend. This is just the backend API. The interactive docs at `/docs` are the closest thing to a UI, and honestly they're pretty usable.
+There's also a full frontend built with Vue 3, TypeScript, and Tailwind CSS. It lives in the `frontend/` directory.
 
 ## what's in the repo
 
@@ -22,8 +22,17 @@ app/
   routers/
     auth.py        # POST /login
     post.py        # CRUD for /posts
-    user.py        # POST /users, GET /users/{id}
+    user.py        # POST /users, GET /users/{id}, GET /users/me
     vote.py        # POST /vote
+
+frontend/          # Vue 3 + TypeScript + Tailwind CSS frontend
+  src/
+    api/           # Axios client, auth/posts/votes API calls
+    components/    # Navbar, PostCard, VoteButton
+    router/        # Vue Router config with lazy-loaded routes
+    stores/        # Pinia auth store (token + user state)
+    types/         # TypeScript interfaces matching the backend schemas
+    views/         # Login, Register, Posts list, Post detail, Create/Edit
 
 alembic/           # Database migrations (6 revisions)
 compose.yml        # Dev compose config (hot-reload, hardcoded env)
@@ -50,6 +59,18 @@ cp .env .env         # make sure it exists (it's already there if you cloned the
 docker compose -f compose.example.yml up
 ```
 
+### frontend
+
+With the backend running (Docker or otherwise), start the frontend dev server:
+
+```bash
+cd frontend
+npm install    # first time only
+npm run dev
+```
+
+That starts Vite on `localhost:5173` and proxies `/api` requests to the backend at `localhost:8000`. Open the browser and you'll see the login page — create an account, then start posting.
+
 ### without docker
 
 You'll need a PostgreSQL instance running somewhere. Then:
@@ -74,6 +95,7 @@ All the POST/PUT/DELETE endpoints except `/users` and `/login` require a Bearer 
 |--------|------|------|-------------|
 | POST | `/users` | no | create an account |
 | GET | `/users/{id}` | no | get a user by id |
+| GET | `/users/me` | yes | get the currently authenticated user |
 | POST | `/login` | no | get a JWT token |
 | GET | `/posts` | yes | list posts (supports `?limit=`, `?skip=`, `?search=`) |
 | POST | `/posts` | yes | create a post |
@@ -100,5 +122,5 @@ The post listing endpoints return a `votes` count alongside each post — that's
 ## a few notes
 
 - The compose.yml has env vars inline for convenience. The .env.example is the template to copy.
-- The API returns 403 if you try to modify someone else's post, not 404. This is intentional — leaking whether a post exists is worse than saying "you can't touch this."
+- The API returns 403 if you try to modify someone else's post, not 404. This is intentional — leaking whether a post exists is worse than saying "you can't touch this." The frontend hides edit/delete buttons for posts you don't own, so you'll only ever see the 403 if you hit the API directly.
 - Migrations are sequential and have already been applied in the repo. If you're starting fresh, `alembic upgrade head` will run all six.

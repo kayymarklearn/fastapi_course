@@ -1,14 +1,35 @@
-# Python-generated files
+# Python
 __pycache__/
 *.py[oc]
 build/
 dist/
 wheels/
 *.egg-info
+*.pyc
 
 # Virtual environments
 .venv/
 .env
+.env.local
+.env.*.local
+
+# Node / frontend
+node_modules/
+frontend/dist/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
 
 # Docker
 compose.yml

@@ -2,7 +2,7 @@ from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from .. import models, schemas, utils
+from .. import models, schemas, utils, oauth2
 from ..database import get_db
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -20,6 +20,13 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)  # retrieve that newly added row into new_post
     return new_user
+
+
+@router.get("/me", response_model=schemas.UserResponse)
+def get_current_user_details(
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    return current_user
 
 
 @router.get("/{id}", response_model=schemas.UserResponse)
